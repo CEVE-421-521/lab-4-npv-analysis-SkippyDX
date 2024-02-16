@@ -223,9 +223,9 @@ print(expectedNPV)
 
 2: The sensitivity test returned approx. 4. This makes sense as the expected value for a variable is just another way of saying its mean. Since the distribution used had a mean of 4, we should expect 4 to be returned. 
 
-3: A limitation of the analysis is that the expected flood damage is used every year despite this might not being realistic. For example if I elevate my house and it floods the next year, I will have a greater benefit than if it had flooded only after 10 years from now.
+3: A limitation of the analysis is that the expected flood damage is used every year despite this might not being realistic. For example if I elevate my house and it floods the next year, I will have a greater benefit than if it had flooded only after 10 years from now because of the discount rate.
 
-One things that is missing from the analysis is building cost fluctuations. For this analysis we only used the current price of the house, however, that price is likely to rise as labor and material costs go up in price. They may even go up much more due to limited reasources directly after a flood, decreasing the benefit you get from elevating the house.
+One things that is missing from the analysis is building cost fluctuations. For this analysis we only used the current price of the house, however, that price is likely to rise as labor and material costs go up. They may even go up much more due to the limited reasources that are present directly after a flood. Implementing this would likely decrease the benefit from elevating and not elevating, however, it would likely favor elevating more as you would then avoid the much higher rebuilding costs from your non-elevated house being damaged.
 
 One way that we could address this limitation is by introducing a factor that we multiply the house's value by to simulate increased material costs after a flood. Additionally, a discount rate for the housing market could be multiplied with the house value each year to simulate increasing labor costs and the house naturally gaining value.
 
