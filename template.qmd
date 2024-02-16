@@ -1,6 +1,6 @@
 ---
 title: "Lab 4: House Elevation NPV Analysis"
-author: "Your Name"
+author: "Kyle Olcott kto1"
 jupyter: julia-1.10
 date: 2024-02-08
 week: 5
@@ -49,4 +49,183 @@ Plots.default(; margin=6Plots.mm)
 
 include("depthdamage.jl")
 ```
+
+# Defines Damage_fn in Function
+```{julia}
+haz_fl_dept = CSV.read("data/haz_fl_dept.csv", DataFrame) # read in the file
+desc = "one story, Contents, fresh water, short duration"
+row = @rsubset(haz_fl_dept, :Description == desc)[1, :] # select the row I want
+dd = DepthDamageData(row) # extract the depth-damage data
+damage_fn = get_depth_damage_function(dd.depths, dd.damages) # get the depth-damage function
+```
+
+# Defines Elevation_Cost in Function
+```{julia}
+elevation_cost = get_elevation_cost_function() # gives us a fitted interpolator
+```
+
+# Defines Flood_Dist in Function
+```{julia}
+    gauge_dist = GeneralizedExtremeValue(5, 1, 0.1) # hypothetical gauge distribution
+    offset = 7.5 # hypothetical height from house to gauge
+    flood_dist = GeneralizedExtremeValue(gauge_dist.μ - offset, gauge_dist.σ, gauge_dist.ξ)
+```
+
+# Defines house area, value, and desired elevation for function
+```{julia}
+house_area = 1000u"ft^2" # Change these values later
+house_value = 250000
+elevation = 1
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+```
+
+# Function for year 0 analysis
+```{julia}
+function single_year_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh)
+    
+    # calculate the expected damages
+    samples = rand(flood_dist, 100_000) .* 1u"ft"
+    damages = damage_fn.(samples)
+    expected_damages_pct = mean(damages)
+    c_dmg = expected_damages_pct * house_value / 100
+
+    # calculate the cost of elevating
+    c_constr = elevation_cost.(Δh, house_area)
+
+    # return the total cost and benefit
+    return -c_constr - c_dmg
+end
+```
+
+# Testing function for year 0 
+```{julia}
+yearonecost = single_year_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh)
+print(yearonecost)
+```
+
+# Defines time period and discount rate
+```{julia}
+T = 10
+discount_rate = 0.05
+```
+
+# Function for NPV analysis
+```{julia}
+function npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+    # calculate the costs and benefits for each year, and then discount
+    time = 0
+    npv = 0
+    while time < T
+    time = time + 1
+    cost = single_year_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh)
+    yearcost = cost * (1-discount_rate)^time
+    npv = npv + yearcost
+    Δh=0u"ft"
+    end
+
+    return npv
+end
+```
+
+# Test for NPV function
+```{julia}
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+
+# One SOW, several actions
+For 0ft of elevation
+```{julia}
+elevation = 0
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+
+For 1 ft of elevation
+```{julia}
+elevation = 1
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+
+For 2 ft of elevation
+```{julia}
+elevation = 2
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+For 3 ft of elevation
+```{julia}
+elevation = 3
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+For 4 ft of elevation
+```{julia}
+elevation = 4
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+For 5 ft of elevation
+```{julia}
+elevation = 5
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+For 6 ft of elevation
+```{julia}
+elevation = 6
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+For 7 ft of elevation
+```{julia}
+elevation = 7
+flood_dist = GeneralizedExtremeValue(gauge_dist.μ - (offset + elevation), gauge_dist.σ, gauge_dist.ξ)
+Δh = elevation * 1u"ft"
+npvcost = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
+print(npvcost)
+```
+
+# Sensitivity Test
+```{julia}
+NPVdist = Normal(4, 2)
+total = 0
+n = 0
+
+while n < 1000000
+n = n + 1
+sample = rand.(NPVdist, 1)
+total = total .+ sample
+end
+
+expectedNPV = total ./ n
+print(expectedNPV)
+```
+
+# Discussion
+1: Suprisingly, not elevating the house was calculated to be the most cost effective. Once elevated, the NPV sudden jumps up and slowly decreases the more you elevate until eventually, it begins to rise up. This makes sense as at a point in elevating the house, you will have made it safe from the majority of flood events, meaning any further elevation just increases the cost without providing any benefits. If the house costed more or the flood distribution was more hazardous, the NPV for elevating the house could have been better than not elevating it. Additionally, if the analysis was conducted over a greater time line for the no elevation scenario, the cost to rebuilt the house every year will eventually outpace the money saved by not elevating the house in year 1. 
+
+2: The sensitivity test returned approx. 4. This makes sense as the expected value for a variable is just another way of saying its mean. Since the distribution used had a mean of 4, we should expect 4 to be returned. 
+
+3: A limitation of the analysis is that the expected flood damage is used every year despite this might not being realistic. For example if I elevate my house and it floods the next year, I will have a greater benefit than if it had flooded only after 10 years from now.
+
+One things that is missing from the analysis is building cost fluctuations. For this analysis we only used the current price of the house, however, that price is likely to rise as labor and material costs go up in price. They may even go up much more due to limited reasources directly after a flood, decreasing the benefit you get from elevating the house.
+
+One way that we could address this limitation is by introducing a factor that we multiply the house's value by to simulate increased material costs after a flood. Additionally, a discount rate for the housing market could be multiplied with the house value each year to simulate increasing labor costs and the house naturally gaining value.
 
